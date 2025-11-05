@@ -15,7 +15,7 @@ type UserRepository interface {
 	GetByEmail(email string) (user entity.User, err error)
 	GetById(id int) (user entity.User, err error)
 	UpdateValidationStatus(code, email string) (err error)
-	SendValidationCode(send *entity.SendEmailValidationRequest) (error)
+	SendValidationCode(send entity.SendEmailValidationRequest) (error)
 }
 
 type UserServ struct {
@@ -62,7 +62,7 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserInfo, err 
 	}
 
 	textPart := fmt.Sprintf("Dear %s welcome to carz rentalz! here is your validation code: ", userInfo.FullName)
-	htmlPart := fmt.Sprintf("<br><br><p>%s</p><br><br><a>carz rentalz</a>", code)
+	htmlPart := fmt.Sprintf("<p>Dear %s welcome to carz rentalz! here is your validation code:<br>%s</p><a>carz rentalz</a>", code)
 
 	sendValidation := entity.SendEmailValidationRequest{
 		Email: infoUser.Email,
@@ -71,7 +71,7 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserInfo, err 
 		TextPart: textPart,
 		HtmlPart: htmlPart,
 	}
-	if err := us.userRepo.SendValidationCode(&sendValidation); err != nil {
+	if err := us.userRepo.SendValidationCode(sendValidation); err != nil {
 		log.Printf("failed to send validation code on server %s", err)
 		return entity.UserInfo{}, err
 	}

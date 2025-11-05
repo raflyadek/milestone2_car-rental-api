@@ -3,7 +3,6 @@ package service
 import (
 	"crypto/rand"
 	"fmt"
-	"milestone2/internal/entity"
 	"os"
 	"time"
 
@@ -35,12 +34,4 @@ func (us *UserServ) generateValidationCode(n int) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", b), nil
-}
-
-func (us *UserServ) sendValidationCode(send entity.SendEmailValidationRequest) (error) {
-	if err := us.userRepo.SendValidationCode(&send); err != nil {
-		return err
-	}
-
-	return nil
 }

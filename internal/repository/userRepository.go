@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"milestone2/internal/entity"
 	"os"
@@ -55,7 +54,7 @@ func (ur *UserRepo) UpdateValidationStatus(code, email string) (err error) {
 	return nil
 }
 
-func (ur *UserRepo) SendValidationCode(send *entity.SendEmailValidationRequest) (error) {
+func (ur *UserRepo) SendValidationCode(send entity.SendEmailValidationRequest) (error) {
 	keyPublic := os.Getenv("MAILJET_API_KEY")
 	keyPrivate := os.Getenv("MAILJET_SECRET_KEY")
 	mailjetClient := mailjet.NewMailjetClient(keyPublic, keyPrivate)
@@ -77,10 +76,11 @@ func (ur *UserRepo) SendValidationCode(send *entity.SendEmailValidationRequest) 
       },
     }
 	messages := mailjet.MessagesV31{Info: messagesInfo }
-	res, err := mailjetClient.SendMailV31(&messages)
+	_, err := mailjetClient.SendMailV31(&messages)
 	if err != nil {
 		log.Print(err.Error())
+		return err
 	}
-	fmt.Println("data: %+v\n", res)
+
 	return nil
 }
