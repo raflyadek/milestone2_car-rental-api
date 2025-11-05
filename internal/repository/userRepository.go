@@ -15,12 +15,26 @@ func NewUserRepository(db *gorm.DB) *UserRepo {
 	return &UserRepo{db}
 }
 
-func (ur *UserRepo) Create(user entity.User) (register entity.UserRegister, err error) {
-	err = ur.db.WithContext(context.Background()).Create(&user).Error
-	return register, nil
+func (ur *UserRepo) Create(user *entity.User) (err error) {
+	if err := ur.db.WithContext(context.Background()).Create(user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ur *UserRepo) GetByEmail(email string) (user entity.User, err error) {
-	err = ur.db.WithContext(context.Background()).First(&user, "email = ?", email).Error
+	if err := ur.db.WithContext(context.Background()).First(&user, "email = ?", email).Error; err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
+}
+
+func (ur *UserRepo) GetById(id int) (user entity.User, err error) {
+	if err := ur.db.WithContext(context.Background()).First(&user, "id = ?", id).Error; err != nil {
+		return entity.User{}, err
+	}
+
 	return user, nil
 }

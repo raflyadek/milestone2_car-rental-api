@@ -28,6 +28,7 @@ func main() {
 	//echo
 	e := echo.New()
 	e.Use(middleware.LoggingMiddleware)
+	e.HTTPErrorHandler = middleware.ErrorHandler
 	//auth
 	e.POST("/users/register", userHand.UserRegister)
 	e.POST("/users/login", userHand.UserLogin)

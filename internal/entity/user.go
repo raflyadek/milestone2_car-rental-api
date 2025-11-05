@@ -8,7 +8,9 @@ type User struct {
 	Deposit float64 `json:"deposit"`
 }
 
-type UserRegister struct {
+type UserInfo struct {
+	Id int `json:"id"`
 	Email string `json:"email"`
 	FullName string `json:"full_name"`
+	Deposit float64 `json:"deposit"`
 }

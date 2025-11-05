@@ -10,8 +10,9 @@ import (
 )
 
 type UserService interface {
-	Create(user entity.User) (entity.UserRegister, error)
-	GetByEmail(email, password string) (accessToken string, err error)
+	CreateUser(user entity.User) (userInfo entity.UserInfo, err error) 
+	GetUserByEmail(email, password string) (accessToken string, err error)
+	GetUserById(id int) (entity.UserInfo, error)
 }
 
 type UserHandler struct {
@@ -22,7 +23,7 @@ func NewUserHandler(userServ UserService) *UserHandler {
 	return &UserHandler{userServ}
 }
 
-func (uh *UserHandler) UserRegister(c echo.Context) error  {
+func (uh *UserHandler) UserRegister(c echo.Context) error {
 	req := new(entity.RegisterRequest)
 	if err := c.Bind(&req); err != nil {
 		logrus.Error("failed bind register request on handler", err.Error())
@@ -39,7 +40,7 @@ func (uh *UserHandler) UserRegister(c echo.Context) error  {
 		})
 	}
 
-	user, err := uh.userServ.Create(entity.User{
+	userInfo, err := uh.userServ.CreateUser(entity.User{
 		Email: req.Email,
 		FullName: req.FullName,
 		Password: req.Password,
@@ -53,7 +54,7 @@ func (uh *UserHandler) UserRegister(c echo.Context) error  {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success register user",
-		"data": user,
+		"data": userInfo,
 	})
 }
 
@@ -74,7 +75,7 @@ func (uh *UserHandler) UserLogin(c echo.Context) error {
 		})
 	}	
 
-	jwtToken, err := uh.userServ.GetByEmail(req.Email, req.Password)
+	jwtToken, err := uh.userServ.GetUserByEmail(req.Email, req.Password)
 	if err != nil {
 		logrus.Error("failed execute get by email on handler", err.Error())
 		return c.JSON(getStatusCode(err), map[string]interface{}{
