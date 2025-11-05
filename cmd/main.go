@@ -32,6 +32,7 @@ func main() {
 	//auth
 	e.POST("/users/register", userHand.UserRegister)
 	e.POST("/users/login", userHand.UserLogin)
+	e.PUT("/users/validation", userHand.UserValidation)
 
 	jwt := e.Group("")
 	jwt.Use(middleware.LoggingMiddleware)

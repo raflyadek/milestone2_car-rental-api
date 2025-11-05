@@ -42,7 +42,7 @@ func (ur *UserRepo) UpdateValidationStatus(code, email string) (err error) {
 	var user entity.User
 	err = ur.db.WithContext(context.Background()).Model(&user).
 	Where("validation_code = ? AND email = ?", code, email).
-	Update("validation_code", true).Error
+	Update("validation_status", true).Error
 	if err != nil {
 		return err
 	}

@@ -115,5 +115,8 @@ func (uh *UserHandler) UserValidation(c echo.Context) error {
 		})
 	}
 
-
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "success validate user",
+		"data": user,
+	})
 }
