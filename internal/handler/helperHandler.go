@@ -23,6 +23,8 @@ func getStatusCode(err error) int {
 		return http.StatusConflict
 	case entity.ErrNotFound:
 		return http.StatusNotFound
+	case entity.ErrUserNotValidate:
+		return http.StatusUnauthorized
 	default:
 		return http.StatusInternalServerError
 	}

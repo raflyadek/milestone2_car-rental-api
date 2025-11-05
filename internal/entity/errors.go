@@ -13,4 +13,6 @@ var (
 	ErrConflict = errors.New("your Item already exist")
 	// ErrBadParamInput will throw if the given request-body or params is not valid
 	ErrBadParamInput = errors.New("given Param is not valid")
+	// ErrUserNotValidate will throw if the current user is not validate
+	ErrUserNotValidate = errors.New("error user not validate")
 )

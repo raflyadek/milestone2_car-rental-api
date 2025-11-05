@@ -62,7 +62,7 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserInfo, err 
 	}
 
 	textPart := fmt.Sprintf("Dear %s welcome to carz rentalz! here is your validation code: ", userInfo.FullName)
-	htmlPart := fmt.Sprintf("<p>Dear %s welcome to carz rentalz! here is your validation code:<br>%s</p><a>carz rentalz</a>", code)
+	htmlPart := fmt.Sprintf("<p>Dear %s welcome to carz rentalz! here is your validation code:<br>%s</p><a>carz rentalz</a>", user.FullName, code)
 
 	sendValidation := entity.SendEmailValidationRequest{
 		Email: infoUser.Email,
@@ -86,10 +86,16 @@ func (us *UserServ) GetUserByEmail(email, password string) (accessToken string, 
 		return "", err
 	}
 
+	if !user.ValidationStatus {
+		log.Print("user not validate")
+		return "", fmt.Errorf("error user not validate")
+	}
+	
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		log.Printf("failed compared hash password and passwor don service %s", err)
 		return "", err
 	}
+
 
 	token, err := us.generateToken(user.Id, user.Email)
 	if err != nil {
