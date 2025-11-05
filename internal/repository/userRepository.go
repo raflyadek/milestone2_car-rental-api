@@ -2,7 +2,12 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"milestone2/internal/entity"
+	"os"
+
+	mailjet "github.com/mailjet/mailjet-apiv3-go"
 	"gorm.io/gorm"
 )
 
@@ -47,5 +52,35 @@ func (ur *UserRepo) UpdateValidationStatus(code, email string) (err error) {
 		return err
 	}
 
+	return nil
+}
+
+func (ur *UserRepo) SendValidationCode(send *entity.SendEmailValidationRequest) (error) {
+	keyPublic := os.Getenv("MAILJET_API_KEY")
+	keyPrivate := os.Getenv("MAILJET_SECRET_KEY")
+	mailjetClient := mailjet.NewMailjetClient(keyPublic, keyPrivate)
+	messagesInfo := []mailjet.InfoMessagesV31 {
+      mailjet.InfoMessagesV31{
+        From: &mailjet.RecipientV31{
+          Email: "carzrentalz@fivermail.com",
+          Name: "Carz Rentalz",
+        },
+        To: &mailjet.RecipientsV31{
+          mailjet.RecipientV31 {
+            Email: send.Email,
+            Name: send.Name,
+          },
+        },
+        Subject: send.Subject,
+        TextPart: send.TextPart,
+        HTMLPart: send.HtmlPart,
+      },
+    }
+	messages := mailjet.MessagesV31{Info: messagesInfo }
+	res, err := mailjetClient.SendMailV31(&messages)
+	if err != nil {
+		log.Print(err.Error())
+	}
+	fmt.Println("data: %+v\n", res)
 	return nil
 }

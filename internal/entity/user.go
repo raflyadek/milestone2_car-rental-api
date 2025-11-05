@@ -17,3 +17,11 @@ type UserInfo struct {
 	Deposit float64 `json:"deposit"`
 	ValidationStatus bool `json:"validation_status"`
 }
+
+type SendEmailValidationRequest struct {
+	Email string `json:"email"`
+	Name string `json:"name"`
+	Subject string `json:"subject"`
+	TextPart string `json:"text_part"`
+	HtmlPart string `json:"html_part"`
+}

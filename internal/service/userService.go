@@ -1,15 +1,12 @@
 package service
 
 import (
-	"crypto/rand"
 	"fmt"
 	"log"
 	"milestone2/internal/entity"
 	"os"
 	"strconv"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,6 +15,7 @@ type UserRepository interface {
 	GetByEmail(email string) (user entity.User, err error)
 	GetById(id int) (user entity.User, err error)
 	UpdateValidationStatus(code, email string) (err error)
+	SendValidationCode(send *entity.SendEmailValidationRequest) (error)
 }
 
 type UserServ struct {
@@ -61,6 +59,21 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserInfo, err 
 	if err != nil {
 		log.Printf("error get user info by id %s", err)
 		return 
+	}
+
+	textPart := fmt.Sprintf("Dear %s welcome to carz rentalz! here is your validation code: ", userInfo.FullName)
+	htmlPart := fmt.Sprintf("<br><br><p>%s</p><br><br><a>carz rentalz</a>", code)
+
+	sendValidation := entity.SendEmailValidationRequest{
+		Email: infoUser.Email,
+		Name: infoUser.FullName,
+		Subject: "Your validation code for carzrentalz.com",
+		TextPart: textPart,
+		HtmlPart: htmlPart,
+	}
+	if err := us.userRepo.SendValidationCode(&sendValidation); err != nil {
+		log.Printf("failed to send validation code on server %s", err)
+		return entity.UserInfo{}, err
 	}
 
 	return infoUser, nil
@@ -127,28 +140,3 @@ func (us *UserServ) GetUserValidation(code, email string) (entity.UserInfo, erro
 	return userInfo, nil
 }
 
-func (us *UserServ) generateToken(id int, email string) (token string, err error) {
-	jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, 
-	jwt.MapClaims{
-		"id": id,
-		"email": email,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	secretKey := os.Getenv("JWT_SECRET_KEY")
-	tokenString, err := jwt.SignedString([]byte(secretKey))
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
-func (us *UserServ) generateValidationCode(n int) (string, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", b), nil
-}
