@@ -1,9 +1,12 @@
 package service
 
 import (
+	"crypto/rand"
+	"fmt"
 	"log"
 	"milestone2/internal/entity"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,6 +17,7 @@ type UserRepository interface {
 	Create(user *entity.User) (err error)
 	GetByEmail(email string) (user entity.User, err error)
 	GetById(id int) (user entity.User, err error)
+	UpdateValidationStatus(code, email string) (err error)
 }
 
 type UserServ struct {
@@ -31,6 +35,21 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserInfo, err 
 		return entity.UserInfo{}, err
 	}
 	user.Password = string(hashPass)
+
+	//validate code
+	secretCode := os.Getenv("CODE")
+	codeInt, err := strconv.Atoi(secretCode)
+	if err != nil {
+		log.Printf("error casting string to int %s", err)
+		return
+	}
+
+	code, err := us.generateValidationCode(codeInt)
+	if err != nil {
+		log.Printf("error generate validation code on service %s", err)
+		return entity.UserInfo{}, err
+	}
+	user.ValidationCode = code
 
 	//create doesnt return anything but yeah just try i think 
 	if err := us.userRepo.Create(&user); err != nil {
@@ -85,6 +104,29 @@ func (us *UserServ) GetUserById(id int) (entity.UserInfo, error) {
 	return userInfo, nil
 }
 
+func (us *UserServ) GetUserValidation(code, email string) (entity.UserInfo, error) {
+	if err := us.userRepo.UpdateValidationStatus(code, email); err != nil {
+		log.Printf("failed update validation status user on service %s", err)
+		return entity.UserInfo{}, err
+	}
+
+	user, err := us.userRepo.GetByEmail(email)
+	if err != nil {
+		log.Printf("failed get user by email on service %s", err)
+		return entity.UserInfo{}, err
+	}
+
+	userInfo := entity.UserInfo{
+		Id: user.Id,
+		Email: user.Email,
+		FullName: user.FullName,
+		Deposit: user.Deposit,
+		ValidationStatus: user.ValidationStatus,
+	}
+
+	return userInfo, nil
+}
+
 func (us *UserServ) generateToken(id int, email string) (token string, err error) {
 	jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, 
 	jwt.MapClaims{
@@ -100,4 +142,13 @@ func (us *UserServ) generateToken(id int, email string) (token string, err error
 	}
 
 	return tokenString, nil
+}
+
+func (us *UserServ) generateValidationCode(n int) (string, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", b), nil
 }

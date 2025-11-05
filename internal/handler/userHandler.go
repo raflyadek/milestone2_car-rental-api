@@ -13,7 +13,7 @@ type UserService interface {
 	CreateUser(user entity.User) (userInfo entity.UserInfo, err error) 
 	GetUserByEmail(email, password string) (accessToken string, err error)
 	GetUserById(id int) (entity.UserInfo, error)
-}
+	GetUserValidation(code, email string) (entity.UserInfo, error)}
 
 type UserHandler struct {
 	userServ UserService
@@ -53,7 +53,7 @@ func (uh *UserHandler) UserRegister(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success register user",
+		"message": "success register user, check your email for email validation",
 		"data": userInfo,
 	})
 }
@@ -88,3 +88,23 @@ func (uh *UserHandler) UserLogin(c echo.Context) error {
 		"data": jwtToken,
 	})
 }
+
+// func (uh *UserHandler) UserValidation(c echo.Context) error {
+// 	req := new(entity.ValidationRequest)	
+// 	if err := c.Bind(&req); err != nil {
+// 		logrus.Error("failed bind login request on handler", err.Error())
+// 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+// 			"message": err.Error(),
+// 		})
+// 	}
+
+// 	validate := validator.New()
+// 	if err := validate.Struct(req); err != nil {
+// 		logrus.Error("failed validate login request on handler", err.Error())
+// 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+// 		"message": err.Error(),
+// 		})
+// 	}
+
+
+// }

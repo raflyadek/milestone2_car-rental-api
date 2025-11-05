@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"milestone2/internal/entity"
-
 	"gorm.io/gorm"
 )
 
@@ -37,4 +36,16 @@ func (ur *UserRepo) GetById(id int) (user entity.User, err error) {
 	}
 
 	return user, nil
+}
+
+func (ur *UserRepo) UpdateValidationStatus(code, email string) (err error) {
+	var user entity.User
+	err = ur.db.WithContext(context.Background()).Model(&user).
+	Where("validation_code = ? AND email = ?", code, email).
+	Update("validation_code", true).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
