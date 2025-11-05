@@ -124,16 +124,22 @@ func (us *UserServ) GetUserById(id int) (entity.UserInfo, error) {
 }
 
 func (us *UserServ) GetUserValidation(code, email string) (entity.UserInfo, error) {
-	if err := us.userRepo.UpdateValidationStatus(code, email); err != nil {
-		log.Printf("failed update validation status user on service %s", err)
-		return entity.UserInfo{}, err
-	}
-
 	user, err := us.userRepo.GetByEmail(email)
 	if err != nil {
 		log.Printf("failed get user by email on service %s", err)
 		return entity.UserInfo{}, err
 	}
+
+	if user.ValidationStatus {
+		log.Print("user already validate")
+		return entity.UserInfo{}, fmt.Errorf("already validate")
+	}
+
+	if err := us.userRepo.UpdateValidationStatus(code, email); err != nil {
+		log.Printf("failed update validation status user on service %s", err)
+		return entity.UserInfo{}, err
+	}
+
 
 	userInfo := entity.UserInfo{
 		Id: user.Id,

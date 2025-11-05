@@ -111,7 +111,7 @@ func (uh *UserHandler) UserValidation(c echo.Context) error {
 	if err != nil {
 		logrus.Error("failed execute get by validation code on handler", err.Error())
 		return c.JSON(getStatusCode(err), map[string]interface{}{
-			"message": "failed validate the email",
+			"message": "validate failed",
 		})
 	}
 
