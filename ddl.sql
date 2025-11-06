@@ -38,3 +38,14 @@ CREATE TABLE payments (
     status BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- (if payment.status = true then add the payment data to this rental_logs)
+CREATE TABLE rental_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    car_id INT REFERENCES cars(id) ON DELETE CASCADE,
+    payment_id INT REFERENCES payments(id) ON DELETE CASCADE,
+    total_day INT NOT NULL CHECK (total_day > 0),
+    total_spent DECIMAL(15, 2) NOT NULL CHECK (total_spent > 0),
+    rental_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+)

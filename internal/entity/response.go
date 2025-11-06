@@ -12,3 +12,36 @@ type CarsResponse struct {
 	PricePerMonth float64 `json:"price_per_month"`
 	Availability bool `json:"availability"`
 }
+
+type UserResponse struct {
+	Id               int     `json:"id"`
+	Email            string  `json:"email"`
+	FullName         string  `json:"full_name"`
+	Deposit          float64 `json:"deposit"`
+	ValidationStatus bool    `json:"validation_status"`
+}
+
+type PaymentInfoResponse struct {
+	Id int `json:"id"`
+	UserId int `json:"user_id"`
+	User User `json:"user_info"`
+	CarId int `json:"car_id"`
+	Car Cars `json:"cars_info"`
+	RentalPeriod string `json:"rental_period"`
+	StartDate string `json:"start_date"`
+	EndDate string `json:"end_date"`
+	Price float64 `json:"price"`
+	Status bool `json:"status"`
+	CreatedAt string `json:"created_at"`
+}
+
+type PaidPaymentResponse struct {
+	Id int `json:"id"`
+	UserId int `json:"user_id"`
+	User User `json:"user_info"`
+	CarId int `json:"car_id"`
+	Car Cars `json:"car_info"`
+	TotalDay int `json:"total_day"`
+	TotalSpent float64 `json:"total_spent"`
+	CreatedAt string `json:"created_at"`
+}

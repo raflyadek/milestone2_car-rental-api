@@ -26,3 +26,19 @@ type CreateRentalCarsRequest struct {
 	PricePerMonth float64 `json:"price_per_month" validate:"required"`
 	Availability bool `json:"availability"`	
 }
+
+type SendEmailValidationRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Name     string `json:"name" validate:"required"`
+	Subject  string `json:"subject" validate:"required"`
+	TextPart string `json:"text_part" validate:"required"`
+	HtmlPart string `json:"html_part" validate:"required"`
+}
+
+type CreatePaymentRequest struct {
+	UserId int `json:"user_id" validate:"required"`
+	CarId int `json:"car_id" validate:"required"`
+	RentalPeriod string `json:"rental_period" validate:"required"`
+	StartDate string `json:"start_date" validate:"required"`
+	EndDate string `json:"end_date" validate:"required"`
+}
