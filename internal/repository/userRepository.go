@@ -19,7 +19,9 @@ func NewUserRepository(db *gorm.DB) *UserRepo {
 }
 
 func (ur *UserRepo) Create(user *entity.User) (err error) {
-	if err := ur.db.WithContext(context.Background()).Create(user).Error; err != nil {
+	if err := ur.db.WithContext(context.Background()).
+	Omit("role", "deposit", "validation_status").
+	Create(user).Error; err != nil {
 		return err
 	}
 

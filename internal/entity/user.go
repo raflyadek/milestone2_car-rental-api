@@ -8,6 +8,7 @@ type User struct {
 	Deposit float64 `json:"deposit"`
 	ValidationCode string `json:"-"`
 	ValidationStatus bool `json:"validation_status"`
+	Role string `json:"role"`
 }
 
 type UserInfo struct {
