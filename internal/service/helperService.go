@@ -9,11 +9,12 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (us *UserServ) generateToken(id int, email string) (token string, err error) {
+func (us *UserServ) generateToken(id int, email, role string) (token string, err error) {
 	jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, 
 	jwt.MapClaims{
 		"id": id,
 		"email": email,
+		"role": role,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 

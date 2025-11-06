@@ -18,12 +18,15 @@ func main() {
 	//dependecy injection
 	//repository
 	userRepo := repository.NewUserRepository(db)
+	carsRepo := repository.NewCarsRepository(db)
 
 	//service
 	userServ := service.NewUserService(userRepo)
+	carsServ := service.NewCarsService(carsRepo)
 
 	//handler
 	userHand := handler.NewUserHandler(userServ)
+	carsHand := handler.NewCarsHandler(carsServ)
 
 	//echo
 	e := echo.New()
@@ -33,10 +36,16 @@ func main() {
 	e.POST("/users/register", userHand.UserRegister)
 	e.POST("/users/login", userHand.UserLogin)
 	e.PUT("/users/validation", userHand.UserValidation)
-
+	
+	//restricted endpoint 
 	jwt := e.Group("")
 	jwt.Use(middleware.LoggingMiddleware)
 	jwt.Use(middleware.JwtMiddleware)
+	//admin
+	jwt.POST("/admin/cars", carsHand.CreateRentalCars)
+	//all
+	jwt.GET("/users/cars/:id", carsHand.GetRentalCarsById)
+	jwt.GET("/users/cars", carsHand.GetAllCars)
 
 
 	port := os.Getenv("PORT")

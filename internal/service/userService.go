@@ -96,8 +96,7 @@ func (us *UserServ) GetUserByEmail(email, password string) (accessToken string, 
 		return "", err
 	}
 
-
-	token, err := us.generateToken(user.Id, user.Email)
+	token, err := us.generateToken(user.Id, user.Email, user.Role)
 	if err != nil {
 		log.Printf("error generate token on service %s", err)
 		return "", err
