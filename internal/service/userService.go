@@ -116,7 +116,7 @@ func (us *UserServ) GetUserById(id int) (entity.UserResponse, error) {
 		Id:       user.Id,
 		Email:    user.Email,
 		FullName: user.FullName,
-		Deposit:  user.Deposit,
+		// Deposit:  user.Deposit,
 	}
 
 	return userInfo, nil
@@ -138,12 +138,21 @@ func (us *UserServ) GetUserValidation(code, email string) (entity.UserResponse, 
 		log.Printf("failed update validation status user on service %s", err)
 		return entity.UserResponse{}, err
 	}
+	user.ValidationStatus = true
 
+	//refetched
+	// userUpdated, err := us.userRepo.GetByEmail(email)
+	// if err != nil {
+	// 	log.Printf("failed get user by email on service %s", err)
+	// 	return entity.UserResponse{}, err
+	// }
+
+	fmt.Printf("data: %+v", user)
 	userInfo := entity.UserResponse{
 		Id:               user.Id,
 		Email:            user.Email,
 		FullName:         user.FullName,
-		Deposit:          user.Deposit,
+		// Deposit:          user.Deposit,
 		ValidationStatus: user.ValidationStatus,
 	}
 

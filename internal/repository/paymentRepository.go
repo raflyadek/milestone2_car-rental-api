@@ -24,7 +24,11 @@ func (pr *PaymentRepo) Create(payment *entity.Payments) (err error) {
 }
 
 func (pr *PaymentRepo) GetById(id int) (payment entity.Payments, err error) {
-	if err := pr.db.WithContext(context.Background()).First(&payment, "id = ?", id).Error; err != nil {
+	if err := pr.db.WithContext(context.Background()).
+	Preload("User").
+	Preload("Car").
+	Preload("Car.Categories").
+	First(&payment, "id = ?", id).Error; err != nil {
 		return entity.Payments{}, err
 	}
 
@@ -56,7 +60,7 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 			TotalSpent: payment.Price,
 		}
 
-		if err := tx.Create(&rentalLog).Error; err != nil {
+		if err := tx.Omit("rental_at").Create(&rentalLog).Error; err != nil {
 			return err
 		}
 

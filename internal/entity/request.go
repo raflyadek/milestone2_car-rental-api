@@ -23,6 +23,7 @@ type CreateRentalCarsRequest struct {
 	Description string `json:"description" validate:"required"`
 	Price float64 `json:"price" validate:"required"`
 	Availability bool `json:"availability"`	
+	AvailabilityUntil bool `json:"availability_until"`	
 }
 
 type SendEmailValidationRequest struct {
@@ -34,7 +35,7 @@ type SendEmailValidationRequest struct {
 }
 
 type CreatePaymentRequest struct {
-	UserId int `json:"user_id" validate:"required"`
+	UserId int `json:"user_id"`
 	CarId int `json:"car_id" validate:"required"`
 	StartDate string `json:"start_date" validate:"required"`
 	EndDate string `json:"end_date" validate:"required"`

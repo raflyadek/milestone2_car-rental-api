@@ -78,7 +78,6 @@ func (ps *PaymentServ) GetByIdPayment(id int) (resp entity.PaymentInfoResponse, 
 		User: payment.User,
 		CarId: payment.CarId,
 		Car: payment.Car,
-		RentalPeriod: payment.RentalPeriod,
 		StartDate: payment.StartDate,
 		EndDate: payment.EndDate,
 		Price: payment.Price,
@@ -96,25 +95,25 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 
 	totalDay, err := ps.totalDay(paymentInfo.EndDate, paymentInfo.StartDate)
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("error on this!!")
 		return
 	}
 
 	//avail until cars
-	formatTime := "2006-01-02 15:04:05"
+	// formatTime := "2006-01-02 15:04:05"
 	formatDate := "2006-01-02"
 	endDate := paymentInfo.EndDate
 
-	parseEndDate, err := time.Parse(formatTime, endDate)
+	parseEndDate, err := time.Parse(time.RFC3339, endDate)
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("error on this parseenddate")
 		return
 	}
 	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
 	TransactionResp, err := ps.paymentRepo.TransactionUpdate(paymentInfo.Id, totalDay, carsAvailUntil)
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("error on this?")
 		return 
 	}
 

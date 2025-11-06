@@ -6,7 +6,6 @@ type Payments struct {
 	User User `json:"user_info" gorm:"foreignKey:UserId;references:Id"`
 	CarId int `json:"car_id"`
 	Car Cars `json:"cars_info" gorm:"foreignKey:CarId;references:Id"`
-	RentalPeriod string `json:"rental_period"`
 	StartDate string `json:"start_date"`
 	EndDate string `json:"end_date"`
 	Price float64 `json:"price"`

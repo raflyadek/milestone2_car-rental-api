@@ -16,7 +16,7 @@ func NewCarsRepository(db *gorm.DB) *CarsRepo {
 }
 
 func (cr *CarsRepo) Create(car *entity.Cars) (err error) {
-	if err := cr.db.WithContext(context.Background()).Omit("Availability").
+	if err := cr.db.WithContext(context.Background()).Omit("Availability", "AvailabilityUntil").
 	Create(car).Error; err != nil {
 		return err
 	}
