@@ -25,9 +25,7 @@ func (cs *CarsServ) Create(req entity.CreateRentalCarsRequest) (carResponse enti
 		PlatNumber: req.PlatNumber,
 		CategoryId: req.CategoryId,
 		Description: req.Description,
-		PricePerDay: req.PricePerDay,
-		PricePerWeek: req.PricePerWeek,
-		PricePerMonth: req.PricePerMonth,
+		Price: req.Price,
 		Availability: req.Availability,
 	}
 	if err := cs.carsRepo.Create(&cars); err != nil {
@@ -58,9 +56,7 @@ func (cs *CarsServ) GetById(id int) (carResponse entity.CarsResponse, err error)
 		CategoryId: car.CategoryId,
 		Categories: car.Categories,
 		Description: car.Description,
-		PricePerDay: car.PricePerDay,
-		PricePerWeek: car.PricePerWeek,
-		PricePerMonth: car.PricePerMonth,
+		Price: car.Price,
 		Availability: car.Availability,
 	}
 
@@ -82,9 +78,7 @@ func (cs *CarsServ) GetAll() (carsResponse []entity.CarsResponse, err error) {
 			CategoryId: car.CategoryId,
 			Categories: car.Categories,
 			Description: car.Description,
-			PricePerDay: car.PricePerDay,
-			PricePerWeek: car.PricePerWeek,
-			PricePerMonth: car.PricePerMonth,
+			Price: car.Price,
 			Availability: car.Availability,
 		})
 	}

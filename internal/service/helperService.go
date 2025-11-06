@@ -3,9 +3,9 @@ package service
 import (
 	"crypto/rand"
 	"fmt"
+	"log"
 	"os"
 	"time"
-
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -35,4 +35,29 @@ func (us *UserServ) generateValidationCode(n int) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", b), nil
+}
+
+func (us *PaymentServ) totalDay(endDate, startDate string) (int, error) {
+	endDateDay := endDate
+	startDateDay := startDate
+	templateDate := "2006-01-02"
+
+	parseEndDate, err := time.Parse(templateDate, endDateDay)
+	if err != nil {
+		log.Print(err.Error())
+		return 0, err
+	}
+
+	parseStartDate, err := time.Parse(templateDate, startDateDay)
+	if err != nil {
+		log.Print(err.Error())
+		return 0, err
+	}
+
+	getDayFromEndDate := parseEndDate.Day()
+	getDayFromStartDate := parseStartDate.Day()
+
+	totalDay := getDayFromEndDate - getDayFromStartDate
+
+	return totalDay, nil
 }

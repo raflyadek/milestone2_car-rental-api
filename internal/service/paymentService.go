@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"milestone2/internal/entity"
 	"time"
@@ -8,25 +9,50 @@ import (
 
 type PaymentRepository interface {
 	Create(payment *entity.Payments) (err error)
-	TransactionUpdate(paymentId, totalDay int) (payment entity.Payments, err error)
 	GetById(id int) (payment entity.Payments, err error)
+	TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (payment entity.Payments, err error)
+}
+
+type CarRepository interface {
+	GetById(id int) (car entity.Cars, err error)
 }
 
 type PaymentServ struct {
 	paymentRepo PaymentRepository
+	carRepo CarRepository
 }
 
-func NewPaymentService(paymentRepo PaymentRepository) *PaymentServ {
-	return &PaymentServ{paymentRepo}
+func NewPaymentService(paymentRepo PaymentRepository, carRepo CarRepository) *PaymentServ {
+	return &PaymentServ{paymentRepo, carRepo}
 }
 
 func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest) (resp entity.PaymentInfoResponse, err error) {
+	//check if the car is avail
+	getCarInfo, err := ps.carRepo.GetById(req.CarId)
+	if err != nil {
+		log.Print(err.Error())
+		return 
+	}
+
+	if !getCarInfo.Availability {
+		return entity.PaymentInfoResponse{}, fmt.Errorf("error %s", err)
+	}
+
+	// price is flexible according to day
+	totalDay, err := ps.totalDay(req.EndDate, req.StartDate)
+	if err != nil {
+		log.Print(err.Error())
+		return 
+	}
+
+	totalPrice := getCarInfo.Price * float64(totalDay)
+
 	payment := entity.Payments{
 		UserId: userId,
 		CarId: req.CarId,
-		RentalPeriod: req.RentalPeriod,
 		StartDate: req.StartDate,
 		EndDate: req.EndDate,
+		Price: totalPrice,
 	}
 	if err := ps.paymentRepo.Create(&payment); err != nil {
 		return entity.PaymentInfoResponse{}, err
@@ -67,28 +93,30 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	if err != nil {
 		return entity.PaidPaymentResponse{}, err
 	}
-	endDateDay := paymentInfo.EndDate
-	startDateDay := paymentInfo.StartDate
-	templateDate := "2006-01-02"
 
-	parseEndDate, err := time.Parse(templateDate, endDateDay)
+	totalDay, err := ps.totalDay(paymentInfo.EndDate, paymentInfo.StartDate)
 	if err != nil {
 		log.Print(err.Error())
-		return entity.PaidPaymentResponse{}, err
+		return
 	}
 
-	parseStartDate, err := time.Parse(templateDate, startDateDay)
+	//avail until cars
+	formatTime := "2006-01-02 15:04:05"
+	formatDate := "2006-01-02"
+	endDate := paymentInfo.EndDate
+
+	parseEndDate, err := time.Parse(formatTime, endDate)
 	if err != nil {
 		log.Print(err.Error())
+		return
 	}
+	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
-	getDayFromEndDate := parseEndDate.Day()
-	getDayFromStartDate := parseStartDate.Day()
-
-	totalDay := getDayFromEndDate - getDayFromStartDate
-
-	// totalDay := paymentInfo.EndDate - paymentInfo.StartDate
-	TransactionResp, err := ps.paymentRepo.TransactionUpdate(paymentInfo.Id, totalDay)
+	TransactionResp, err := ps.paymentRepo.TransactionUpdate(paymentInfo.Id, totalDay, carsAvailUntil)
+	if err != nil {
+		log.Print(err.Error())
+		return 
+	}
 
 	TransactionUpdatePaymentResp := entity.PaidPaymentResponse{
 		Id: TransactionResp.Id,

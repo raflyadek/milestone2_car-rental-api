@@ -7,9 +7,7 @@ type CarsResponse struct {
 	CategoryId int `json:"category_id"`
 	Categories Categories `json:"categories_info"`
 	Description string `json:"description"`
-	PricePerDay float64 `json:"price_per_day"`
-	PricePerWeek float64 `json:"price_per_week"`
-	PricePerMonth float64 `json:"price_per_month"`
+	Price float64 `json:"price"`
 	Availability bool `json:"availability"`
 }
 

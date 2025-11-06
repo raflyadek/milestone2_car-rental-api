@@ -21,10 +21,9 @@ CREATE TABLE cars (
     plat_number VARCHAR(100) NOT NULL UNIQUE,
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
     description TEXT NOT NULL,
-    price_per_day DECIMAL(12, 2) NOT NULL CHECK (price_per_day > 0),
-    price_per_week DECIMAL(12, 2) NOT NULL CHECK (price_per_week > 0),
-    price_per_month DECIMAL(12, 2) NOT NULL CHECK (price_per_month > 0),
-    availability BOOLEAN DEFAULT TRUE
+    price DECIMAL(12, 2) NOT NULL CHECK (price > 0),
+    availability BOOLEAN DEFAULT TRUE,
+    availability_until DATE
 );
 
 CREATE TABLE payments (
@@ -36,7 +35,9 @@ CREATE TABLE payments (
     end_date DATE NOT NULL,
     price DECIMAL(15, 2) NOT NULL CHECK (price > 0),
     status BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- 10 minute
+    -- valid_until TIMESTAMP
 );
 
 -- (if payment.status = true then add the payment data to this rental_logs)
