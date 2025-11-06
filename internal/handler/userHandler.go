@@ -10,10 +10,10 @@ import (
 )
 
 type UserService interface {
-	CreateUser(user entity.User) (userInfo entity.UserInfo, err error) 
+	CreateUser(user entity.User) (userInfo entity.UserResponse, err error)
 	GetUserByEmail(email, password string) (accessToken string, err error)
-	GetUserById(id int) (entity.UserInfo, error)
-	GetUserValidation(code, email string) (entity.UserInfo, error)
+	GetUserById(id int) (entity.UserResponse, error)
+	GetUserValidation(code, email string) (entity.UserResponse, error)
 }
 
 type UserHandler struct {
@@ -37,12 +37,12 @@ func (uh *UserHandler) UserRegister(c echo.Context) error {
 	if err := validate.Struct(req); err != nil {
 		logrus.Error("failed validate register request on handler", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-		"message": err.Error(),
+			"message": err.Error(),
 		})
 	}
 
 	userInfo, err := uh.userServ.CreateUser(entity.User{
-		Email: req.Email,
+		Email:    req.Email,
 		FullName: req.FullName,
 		Password: req.Password,
 	})
@@ -55,7 +55,7 @@ func (uh *UserHandler) UserRegister(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success register user, check your email for email validation",
-		"data": userInfo,
+		"data":    userInfo,
 	})
 }
 
@@ -72,9 +72,9 @@ func (uh *UserHandler) UserLogin(c echo.Context) error {
 	if err := validate.Struct(req); err != nil {
 		logrus.Error("failed validate login request on handler", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-		"message": err.Error(),
+			"message": err.Error(),
 		})
-	}	
+	}
 
 	jwtToken, err := uh.userServ.GetUserByEmail(req.Email, req.Password)
 	if err != nil {
@@ -86,12 +86,12 @@ func (uh *UserHandler) UserLogin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success login user",
-		"data": jwtToken,
+		"data":    jwtToken,
 	})
 }
 
 func (uh *UserHandler) UserValidation(c echo.Context) error {
-	req := new(entity.EmailValidationRequest)	
+	req := new(entity.EmailValidationRequest)
 	if err := c.Bind(&req); err != nil {
 		logrus.Error("failed bind login request on handler", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
@@ -103,7 +103,7 @@ func (uh *UserHandler) UserValidation(c echo.Context) error {
 	if err := validate.Struct(req); err != nil {
 		logrus.Error("failed validate login request on handler", err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-		"message": err.Error(),
+			"message": err.Error(),
 		})
 	}
 
@@ -117,6 +117,6 @@ func (uh *UserHandler) UserValidation(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success validate user",
-		"data": user,
+		"data":    user,
 	})
 }
