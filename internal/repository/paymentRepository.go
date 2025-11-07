@@ -58,6 +58,7 @@ func (pr *PaymentRepo) GetById(id int) (payment entity.Payments, err error) {
 	return payment, nil
 }
 
+//rollback everything if one return 
 func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (err error) {
 	errr := pr.db.WithContext(context.Background()).
 	Transaction(func(tx *gorm.DB) error {
