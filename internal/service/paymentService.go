@@ -29,16 +29,33 @@ func NewPaymentService(paymentRepo PaymentRepository, carRepo CarRepository) *Pa
 }
 
 func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest) (resp entity.PaymentInfoResponse, err error) {
-	//check if the car is avail
+	// check if the car is avail
 	getCarInfo, err := ps.carRepo.GetById(req.CarId)
 	if err != nil {
 		log.Print(err.Error())
 		return 
 	}
 
-	if !getCarInfo.Availability {
-		return entity.PaymentInfoResponse{}, fmt.Errorf("error %s", err)
+	// if !getCarInfo.Availability {
+	// 	return entity.PaymentInfoResponse{}, fmt.Errorf("error %s", err)
+	// }
+
+	//check the car availability until
+	availUntil := getCarInfo.AvailabilityUntil
+	availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
+	if err != nil {
+		log.Print("avail until")
+		return
 	}
+	//if availuntilparsed after the time is now so if availuntilparse is 20 and now is 21 
+	//the value then false and continue and if true then it stops right here.
+	availUntilBool := availUntilParsed.After(time.Now())
+	if availUntilBool {
+		log.Print("check avail until")
+		return 
+	}
+
+
 
 	// price is flexible according to day
 	//still error cannot parse 
@@ -180,7 +197,7 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	}
 	//total day 	
 	totalDay := parseEndDate.Day() - parseStartDate.Day()
-	//avail until cars
+	//avail until cars + 1 day for the buffer time
 	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
 	//valid until check 
