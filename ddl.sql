@@ -30,7 +30,6 @@ CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     car_id INT REFERENCES cars(id) ON DELETE CASCADE,
-    -- rental_period VARCHAR(30) NOT NULL CHECK (rental_period IN ('daily', 'weekly', 'monthly')),
     start_date DATE DEFAULT CURRENT_DATE,
     end_date DATE NOT NULL,
     price DECIMAL(15, 2) NOT NULL CHECK (price > 0),

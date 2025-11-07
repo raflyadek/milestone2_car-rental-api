@@ -35,30 +35,42 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 		log.Print(err.Error())
 		return entity.PaymentInfoResponse{}, err
 	}
-
-	//check if availability is null or not 
-	//check the car availability until
+	
+	//check date
 	availUntil := getCarInfo.AvailabilityUntil
 	startDate := req.StartDate
-	fmt.Printf("avail: %s, start: %s", availUntil, startDate)
-	if availUntil != "" {
-		availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
-		if err != nil {
-			log.Print("parse failed")
-			return entity.PaymentInfoResponse{}, err
-		}
 
-		startDateParsed, err2 := time.Parse("2006-01-02", startDate)
-		if err != nil {
-			log.Print("parse failed")
-			return entity.PaymentInfoResponse{}, err2
+	startDateParsed, err := time.Parse("2006-01-02", startDate)
+	if err != nil {
+		log.Print("parse failed")
+		return entity.PaymentInfoResponse{}, err
+	}
+
+	availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
+	if err != nil {
+		log.Print("parse failed")
+		return entity.PaymentInfoResponse{}, err
+	}
+	
+	availUntilBool := availUntilParsed.After(startDateParsed)
+		
+	if startDateParsed.Before(time.Now()) {
+		return entity.PaymentInfoResponse{}, fmt.Errorf("start date cannot beforec current time")
+	}
+
+	//check if availability is null or not 
+	if availUntil != "" {
+		//check if the start date is valid or not 
+		if startDateParsed.Before(time.Now()) {
+			log.Printf("date cannot before today")
+			return entity.PaymentInfoResponse{}, fmt.Errorf("date cannot before today")
 		}
-		//if availuntilparsed after the time is now so if availuntilparse is 20 and now is 21 
+		//if availuntilparsed after the startDate so if availuntilparse is 20 and now is 21 
 		//the value then false and continue and if true then it stops right here.
-		availUntilBool := availUntilParsed.After(startDateParsed)
-		if availUntilBool {
-			log.Print("check avail until")
-			return entity.PaymentInfoResponse{}, fmt.Errorf("car is not available")
+		//check the car availability until
+	if availUntilBool {
+		log.Print("check avail until")
+		return entity.PaymentInfoResponse{}, fmt.Errorf("car is not available")
 		}
 	}
 
@@ -180,13 +192,11 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	//we can check with if car.availability.until.day < now then continue
 	//yeah using availability.until.day so if someone booked it for next week even 
 	//even tho the availability is false anyone can still rented it if < availability.until.day
-	// fmt.Printf("data %+v", paymentInfo)
 	if !paymentInfo.Car.Availability {
 		return entity.PaidPaymentResponse{}, fmt.Errorf("already booked")
 	}
 
 	//parsing date
-	//formatTime := "2006-01-02 15:04:05"
 	formatDate := "2006-01-02"
 	endDate := paymentInfo.EndDate
 	startDate := paymentInfo.StartDate
@@ -208,17 +218,14 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
 	//valid until check 
-	// formatTime := "15:04:05"
 	validUntil := paymentInfo.ValidUntil
 
 	parseValidUntil, err := time.Parse(time.RFC3339, validUntil)
 	if err != nil {
 		return
 	}
-
-	now := time.Now()
 	
-	if parseValidUntil.After(now) {
+	if parseValidUntil.After(time.Now()) {
 		return entity.PaidPaymentResponse{}, fmt.Errorf("expired payment")
 	}
 
@@ -231,9 +238,7 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	TransactionUpdatePaymentResp := entity.PaidPaymentResponse{
 		Id: paymentInfo.Id,
 		UserId: paymentInfo.UserId,
-		// User: paymentInfo.User,
 		CarId: paymentInfo.CarId,
-		// Car: paymentInfo.Car,
 		TotalDay: totalDay,
 		TotalSpent: paymentInfo.Price,
 		CreatedAt: paymentInfo.CreatedAt,
