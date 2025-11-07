@@ -12,6 +12,8 @@ import (
 
 type PaymentService interface {
 	CreatePayment(userId int, req entity.CreatePaymentRequest) (resp entity.PaymentInfoResponse, err error)
+	GetAllPayment() (resp []entity.PaymentInfoResponse, err error)
+	GetByUserIdPayment(userId int) (resp []entity.PaymentInfoResponse, err error)
 	GetByIdPayment(id int) (resp entity.PaymentInfoResponse, err error)
 	TransactionUpdatePayment(paymentId int) (resp entity.PaidPaymentResponse, err error)
 }
@@ -56,6 +58,48 @@ func (ph *PaymentHandler) CreatePayment(c echo.Context) error {
 	})
 }
 
+func (ph *PaymentHandler) GetAllPayment(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claim := user.Claims.(jwt.MapClaims)
+	role := claim["role"].(string)
+
+	if role != "admin" {
+		return c.JSON(http.StatusForbidden, map[string]interface{}{
+			"message": "forbidden to access",
+		})
+	}
+
+	payments, err := ph.paymentServ.GetAllPayment()
+	if err != nil {
+		return c.JSON(getStatusCode(err), map[string]interface{}{
+			"message": "internal server error",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "ok",
+		"data": payments,
+	})
+}
+
+func (ph *PaymentHandler) GetByUserIdPayment(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claim := user.Claims.(jwt.MapClaims)
+	userId := int(claim["id"].(float64))
+
+	payments, err := ph.paymentServ.GetByUserIdPayment(userId)
+	if err != nil {
+		return c.JSON(getStatusCode(err), map[string]interface{}{
+			"message": "internal server error",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "ok",
+		"data": payments,
+	})
+}
+
 func (ph *PaymentHandler) GetByIdPayment(c echo.Context) error { 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -86,7 +130,7 @@ func (ph *PaymentHandler) TransactionUpdatePayment(c echo.Context) error {
 
 	if role != "admin" {
 		return c.JSON(http.StatusForbidden, map[string]interface{}{
-			"message": "cant access",
+			"message": "forbidden to access",
 		})
 	}
 

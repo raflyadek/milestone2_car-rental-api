@@ -25,7 +25,6 @@ type PaymentInfoResponse struct {
 	User User `json:"user_info"`
 	CarId int `json:"car_id"`
 	Car Cars `json:"cars_info"`
-
 	// RentalPeriod string `json:"rental_period"`
 	StartDate string `json:"start_date"`
 	EndDate string `json:"end_date"`

@@ -9,6 +9,8 @@ import (
 
 type PaymentRepository interface {
 	Create(payment *entity.Payments) (err error)
+	GetAll() (payments []entity.Payments, err error)
+	GetByUserId(userId int) (payment []entity.Payments, err error)
 	GetById(id int) (payment entity.Payments, err error)
 	TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (err error)
 }
@@ -71,6 +73,55 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	}
 
 	return paymentInfo, nil
+}
+
+func (ps *PaymentServ) GetAllPayment() (resp []entity.PaymentInfoResponse, err error) {
+	payments, err := ps.paymentRepo.GetAll()
+	if err != nil {
+		return []entity.PaymentInfoResponse{}, err
+	}
+
+	for _, info := range payments {
+		resp = append(resp, entity.PaymentInfoResponse{
+			Id: info.Id,
+			UserId: info.UserId,
+			User: info.User,
+			CarId: info.CarId,
+			Car: info.Car,
+			StartDate: info.StartDate,
+			EndDate: info.EndDate,
+			Price: info.Price,
+			Status: info.Status,
+			ValidUntil: info.ValidUntil,
+			CreatedAt: info.CreatedAt,
+		})
+	}
+	return resp, nil
+}
+
+func (ps *PaymentServ) GetByUserIdPayment(userId int) (resp []entity.PaymentInfoResponse, err error) {
+	payments, err := ps.paymentRepo.GetByUserId(userId)
+	if err != nil {
+		return []entity.PaymentInfoResponse{}, err
+	}
+
+	for _, info := range payments {
+		resp = append(resp, entity.PaymentInfoResponse{
+			Id: info.Id,
+			UserId: info.UserId,
+			User: info.User,
+			CarId: info.CarId,
+			Car: info.Car,
+			StartDate: info.StartDate,
+			EndDate: info.EndDate,
+			Price: info.Price,
+			Status: info.Status,
+			ValidUntil: info.ValidUntil,
+			CreatedAt: info.CreatedAt,
+		})
+	}
+
+	return resp, nil
 }
 
 func (ps *PaymentServ) GetByIdPayment(id int) (resp entity.PaymentInfoResponse, err error) {
@@ -143,7 +194,7 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 
 	now := time.Now()
 	
-	if !parseValidUntil.After(now) {
+	if parseValidUntil.After(now) {
 		return entity.PaidPaymentResponse{}, fmt.Errorf("expired payment")
 	}
 

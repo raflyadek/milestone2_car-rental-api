@@ -23,6 +23,26 @@ func (pr *PaymentRepo) Create(payment *entity.Payments) (err error) {
 	return nil
 }
 
+func (pr *PaymentRepo) GetAll() (payments []entity.Payments, err error) {
+	if err := pr.db.WithContext(context.Background()).
+	Omit("User", "Car").
+	Find(&payments).Error; err != nil {
+		return []entity.Payments{}, err
+	}
+
+	return payments, nil
+}
+
+func (pr *PaymentRepo) GetByUserId(userId int) (payment []entity.Payments, err error) {
+	if err := pr.db.WithContext(context.Background()).
+	Omit("User", "Car").
+	Find(&payment, "user_id = ?", userId).Error; err != nil {
+		return []entity.Payments{}, err
+	}
+
+	return payment, nil
+}
+
 func (pr *PaymentRepo) GetById(id int) (payment entity.Payments, err error) {
 	if err := pr.db.WithContext(context.Background()).
 	Preload("User").

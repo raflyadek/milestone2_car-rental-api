@@ -49,11 +49,13 @@ func main() {
 	//admin
 	jwt.POST("/admin/cars", carsHand.CreateRentalCars)
 	jwt.PATCH("/admin/payments/:id", paymentHand.TransactionUpdatePayment)
+	jwt.GET("admin/payments", paymentHand.GetAllPayment)
+	jwt.GET("admin/payments/:id", paymentHand.GetByIdPayment)
 	//all
 	jwt.GET("/users/cars/:id", carsHand.GetRentalCarsById)
 	jwt.GET("/users/cars", carsHand.GetAllCars)
 	jwt.POST("/users/payments", paymentHand.CreatePayment)
-	jwt.GET("users/payments/:id", paymentHand.GetByIdPayment)
+	jwt.GET("/users/payments", paymentHand.GetByUserIdPayment)
 
 
 	port := os.Getenv("PORT")
