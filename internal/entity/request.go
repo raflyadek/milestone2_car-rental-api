@@ -40,3 +40,9 @@ type CreatePaymentRequest struct {
 	StartDate string `json:"start_date" validate:"required"`
 	EndDate string `json:"end_date" validate:"required"`
 }
+
+type CheckCarAvailabilityRequest struct {
+	CarId int `json:"car_id" validate:"required"`
+	StartDate string `json:"start_date" validate:"required"`
+	EndDate string `json:"end_date" validate:"required"`
+}

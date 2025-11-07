@@ -36,6 +36,7 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 		return entity.PaymentInfoResponse{}, err
 	}
 
+	
 	//avail always true only if the car is taken care to maintenanced
 	if !getCarInfo.Availability {
 		return entity.PaymentInfoResponse{}, fmt.Errorf("not available")

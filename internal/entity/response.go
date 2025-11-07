@@ -68,3 +68,9 @@ type RentalLogsResponseUser struct {
 	TotalSpent float64 `json:"total_spent"`
 	CreatedAt  string  `json:"rental_at"`
 }
+
+type RentalAvailabilityResponse struct {
+	// CarId int `json:"car_id"`
+	// Car Cars `json:"car_info"`
+	Availability bool `json:"availability_book"` 
+}

@@ -45,3 +45,12 @@ func (rr *RentalRepo) GetByUserId(userId int) (logs []entity.RentalLogs, err err
 
 	return logs, nil
 } 
+
+func (rr *RentalRepo) GetByCarId(carId int) (logs []entity.RentalLogs, err error) {
+	if err := rr.db.WithContext(context.Background()).
+	Find(&logs, "car_id = ?", carId).Error; err != nil {
+		return []entity.RentalLogs{}, err
+	}
+
+	return logs, nil
+}
