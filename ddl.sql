@@ -37,7 +37,7 @@ CREATE TABLE payments (
     status BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- 10 minute
-    -- valid_until TIMESTAMP
+    valid_until TIMESTAMP
 );
 
 -- (if payment.status = true then add the payment data to this rental_logs)

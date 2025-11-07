@@ -15,7 +15,7 @@ func NewPaymentRepository(db *gorm.DB) *PaymentRepo {
 }
 
 func (pr *PaymentRepo) Create(payment *entity.Payments) (err error) {
-	if err := pr.db.WithContext(context.Background()).Omit("Status, CreatedAt").
+	if err := pr.db.WithContext(context.Background()).Omit("Status", "CreatedAt").
 	Create(payment).Error; err != nil {
 		return err
 	}
@@ -35,16 +35,16 @@ func (pr *PaymentRepo) GetById(id int) (payment entity.Payments, err error) {
 	return payment, nil
 }
 
-func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (payment entity.Payments, err error) {
+func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (err error) {
 	errr := pr.db.WithContext(context.Background()).
 	Transaction(func(tx *gorm.DB) error {
 		//update payment
+		var payment entity.Payments
 		if err := tx.Model(&payment).Where("id = ?", paymentId).Update("Status", true).Error; err != nil {
 			return err
 		}
 
 		//get payment info
-		var payment entity.Payments
 		if err := tx.First(&payment, "id = ?", paymentId).Error; err != nil {
 			return err
 		}
@@ -52,15 +52,15 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 		//create rental log
 		rentalLog := entity.RentalLogs{
 			UserId: payment.UserId,
-			User: payment.User,
 			CarId: payment.CarId,
-			Car: payment.Car,
 			PaymentId: payment.Id,
+			StartDate: payment.StartDate,
+			EndDate: payment.EndDate,
 			TotalDay: totalDay,
 			TotalSpent: payment.Price,
 		}
 
-		if err := tx.Omit("rental_at").Create(&rentalLog).Error; err != nil {
+		if err := tx.Omit("CreatedAt").Create(&rentalLog).Error; err != nil {
 			return err
 		}
 
@@ -76,8 +76,8 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 		return nil
 	})
 	if errr != nil {
-		return entity.Payments{}, err
+		return err
 	}
 
-	return payment, err
+	return err
 }

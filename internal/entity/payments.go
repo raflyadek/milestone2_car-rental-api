@@ -9,6 +9,7 @@ type Payments struct {
 	StartDate string `json:"start_date"`
 	EndDate string `json:"end_date"`
 	Price float64 `json:"price"`
-	Status bool `json:"status"`
+	Status bool `json:"status_payment"`
+	ValidUntil string `json:"valid_until"`
 	CreatedAt string `json:"created_at"`
 }

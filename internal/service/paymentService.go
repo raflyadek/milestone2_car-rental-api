@@ -10,7 +10,7 @@ import (
 type PaymentRepository interface {
 	Create(payment *entity.Payments) (err error)
 	GetById(id int) (payment entity.Payments, err error)
-	TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (payment entity.Payments, err error)
+	TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (err error)
 }
 
 type CarRepository interface {
@@ -39,11 +39,17 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	}
 
 	// price is flexible according to day
+	//still error cannot parse 
+	//ERRO[0003] parsing time "2025-11-11" as "2006-01-02T15:04:05Z07:00": cannot parse "" as "T" 
 	totalDay, err := ps.totalDay(req.EndDate, req.StartDate)
 	if err != nil {
-		log.Print(err.Error())
+		log.Print("here")
 		return 
 	}
+
+	//valid until
+	templateDate := "2006-01-02 15:04:05"
+	validUntil := time.Now().Add(time.Minute * 10).Format(templateDate)
 
 	totalPrice := getCarInfo.Price * float64(totalDay)
 
@@ -53,6 +59,7 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 		StartDate: req.StartDate,
 		EndDate: req.EndDate,
 		Price: totalPrice,
+		ValidUntil: validUntil,
 	}
 	if err := ps.paymentRepo.Create(&payment); err != nil {
 		return entity.PaymentInfoResponse{}, err
@@ -83,6 +90,7 @@ func (ps *PaymentServ) GetByIdPayment(id int) (resp entity.PaymentInfoResponse, 
 		Price: payment.Price,
 		Status: payment.Status,
 		CreatedAt: payment.CreatedAt,
+		ValidUntil: payment.ValidUntil,
 	}
 	return getByIdResp, nil
 }
@@ -93,39 +101,67 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 		return entity.PaidPaymentResponse{}, err
 	}
 
-	totalDay, err := ps.totalDay(paymentInfo.EndDate, paymentInfo.StartDate)
-	if err != nil {
-		log.Print("error on this!!")
-		return
+	//check avail from car.availability OR car.availability.until?? <-
+	//we can check with if car.availability.until.day < now then continue
+	//yeah using availability.until.day so if someone booked it for next week even 
+	//even tho the availability is false anyone can still rented it if < availability.until.day
+	// fmt.Printf("data %+v", paymentInfo)
+	if !paymentInfo.Car.Availability {
+		return entity.PaidPaymentResponse{}, fmt.Errorf("already booked")
 	}
 
-	//avail until cars
-	// formatTime := "2006-01-02 15:04:05"
+	//parsing date
+	//formatTime := "2006-01-02 15:04:05"
 	formatDate := "2006-01-02"
 	endDate := paymentInfo.EndDate
+	startDate := paymentInfo.StartDate
 
 	parseEndDate, err := time.Parse(time.RFC3339, endDate)
 	if err != nil {
 		log.Print("error on this parseenddate")
 		return
 	}
+
+	parseStartDate, err := time.Parse(time.RFC3339, startDate)
+	if err != nil {
+		log.Print("eror start date parse")
+		return
+	}
+	//total day 	
+	totalDay := parseEndDate.Day() - parseStartDate.Day()
+	//avail until cars
 	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
-	TransactionResp, err := ps.paymentRepo.TransactionUpdate(paymentInfo.Id, totalDay, carsAvailUntil)
+	//valid until check 
+	// formatTime := "15:04:05"
+	validUntil := paymentInfo.ValidUntil
+
+	parseValidUntil, err := time.Parse(time.RFC3339, validUntil)
 	if err != nil {
+		return
+	}
+
+	now := time.Now()
+	
+	if !parseValidUntil.After(now) {
+		return entity.PaidPaymentResponse{}, fmt.Errorf("expired payment")
+	}
+
+	
+	if err := ps.paymentRepo.TransactionUpdate(paymentInfo.Id, totalDay, carsAvailUntil); err != nil {
 		log.Print("error on this?")
-		return 
+		return entity.PaidPaymentResponse{}, err
 	}
 
 	TransactionUpdatePaymentResp := entity.PaidPaymentResponse{
-		Id: TransactionResp.Id,
-		UserId: TransactionResp.UserId,
-		User: TransactionResp.User,
-		CarId: TransactionResp.CarId,
-		Car: TransactionResp.Car,
+		Id: paymentInfo.Id,
+		UserId: paymentInfo.UserId,
+		// User: paymentInfo.User,
+		CarId: paymentInfo.CarId,
+		// Car: paymentInfo.Car,
 		TotalDay: totalDay,
-		TotalSpent: TransactionResp.Price,
-		CreatedAt: TransactionResp.CreatedAt,
+		TotalSpent: paymentInfo.Price,
+		CreatedAt: paymentInfo.CreatedAt,
 	}
 
 	return TransactionUpdatePaymentResp, nil

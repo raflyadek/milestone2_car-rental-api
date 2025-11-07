@@ -31,15 +31,16 @@ type PaymentInfoResponse struct {
 	EndDate string `json:"end_date"`
 	Price float64 `json:"total_price"`
 	Status bool `json:"status"`
+	ValidUntil string `json:"valid_until"`
 	CreatedAt string `json:"created_at"`
 }
 
 type PaidPaymentResponse struct {
 	Id int `json:"id"`
 	UserId int `json:"user_id"`
-	User User `json:"user_info"`
+	// User User `json:"user_info"`
 	CarId int `json:"car_id"`
-	Car Cars `json:"car_info"`
+	// Car Cars `json:"car_info"`
 	TotalDay int `json:"total_day"`
 	TotalSpent float64 `json:"total_spent"`
 	CreatedAt string `json:"created_at"`

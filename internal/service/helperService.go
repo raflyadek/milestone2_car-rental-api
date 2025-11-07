@@ -40,15 +40,15 @@ func (us *UserServ) generateValidationCode(n int) (string, error) {
 func (us *PaymentServ) totalDay(endDate, startDate string) (int, error) {
 	endDateDay := endDate
 	startDateDay := startDate
-	// templateDate := "2006-01-02"
+	templateDate := "2006-01-02"
 
-	parseEndDate, err := time.Parse(time.RFC3339, endDateDay)
+	parseEndDate, err := time.Parse(templateDate, endDateDay)
 	if err != nil {
 		log.Print(err.Error())
 		return 0, err
 	}
 
-	parseStartDate, err := time.Parse(time.RFC3339, startDateDay)
+	parseStartDate, err := time.Parse(templateDate, startDateDay)
 	if err != nil {
 		log.Print(err.Error())
 		return 0, err
