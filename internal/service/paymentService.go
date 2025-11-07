@@ -40,14 +40,17 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	//check the car availability until
 	availUntil := getCarInfo.AvailabilityUntil
 	startDate := req.StartDate
+	fmt.Printf("avail: %s, start: %s", availUntil, startDate)
 	if availUntil != "" {
 		availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
 		if err != nil {
+			log.Print("parse failed")
 			return entity.PaymentInfoResponse{}, err
 		}
 
-		startDateParsed, err2 := time.Parse(time.RFC3339, startDate)
+		startDateParsed, err2 := time.Parse("2006-01-02", startDate)
 		if err != nil {
+			log.Print("parse failed")
 			return entity.PaymentInfoResponse{}, err2
 		}
 		//if availuntilparsed after the time is now so if availuntilparse is 20 and now is 21 
