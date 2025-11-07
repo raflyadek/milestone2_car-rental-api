@@ -33,29 +33,31 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	getCarInfo, err := ps.carRepo.GetById(req.CarId)
 	if err != nil {
 		log.Print(err.Error())
-		return 
+		return entity.PaymentInfoResponse{}, err
 	}
 
-	// if !getCarInfo.Availability {
-	// 	return entity.PaymentInfoResponse{}, fmt.Errorf("error %s", err)
-	// }
-
+	//check if availability is null or not 
 	//check the car availability until
 	availUntil := getCarInfo.AvailabilityUntil
-	availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
-	if err != nil {
-		log.Print("avail until")
-		return
-	}
-	//if availuntilparsed after the time is now so if availuntilparse is 20 and now is 21 
-	//the value then false and continue and if true then it stops right here.
-	availUntilBool := availUntilParsed.After(time.Now())
-	if availUntilBool {
-		log.Print("check avail until")
-		return 
-	}
+	startDate := req.StartDate
+	if availUntil != "" {
+		availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
+		if err != nil {
+			return entity.PaymentInfoResponse{}, err
+		}
 
-
+		startDateParsed, err2 := time.Parse(time.RFC3339, startDate)
+		if err != nil {
+			return entity.PaymentInfoResponse{}, err2
+		}
+		//if availuntilparsed after the time is now so if availuntilparse is 20 and now is 21 
+		//the value then false and continue and if true then it stops right here.
+		availUntilBool := availUntilParsed.After(startDateParsed)
+		if availUntilBool {
+			log.Print("check avail until")
+			return entity.PaymentInfoResponse{}, fmt.Errorf("car is not available")
+		}
+	}
 
 	// price is flexible according to day
 	//still error cannot parse 
@@ -63,7 +65,7 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	totalDay, err := ps.totalDay(req.EndDate, req.StartDate)
 	if err != nil {
 		log.Print("here")
-		return 
+		return entity.PaymentInfoResponse{}, err
 	}
 
 	//valid until
@@ -81,11 +83,13 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 		ValidUntil: validUntil,
 	}
 	if err := ps.paymentRepo.Create(&payment); err != nil {
+		log.Print("create payment")
 		return entity.PaymentInfoResponse{}, err
 	}
 
 	paymentInfo, err := ps.GetByIdPayment(payment.Id)
 	if err != nil {
+		log.Print("get by id payment")
 		return entity.PaymentInfoResponse{}, err
 	}
 

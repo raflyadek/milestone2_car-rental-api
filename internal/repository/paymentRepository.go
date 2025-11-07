@@ -102,5 +102,5 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 		return err
 	}
 
-	return err
+	return nil
 }

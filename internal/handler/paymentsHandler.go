@@ -47,7 +47,7 @@ func (ph *PaymentHandler) CreatePayment(c echo.Context) error {
 
 	resp, err := ph.paymentServ.CreatePayment(userId, *req)
 	if err != nil {
-		return c.JSON(getStatusCode(err), map[string]interface{}{
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "internal server error",
 		})
 	}
