@@ -35,6 +35,7 @@ func main() {
 	carsHand := handler.NewCarsHandler(carsServ)
 	paymentHand := handler.NewPaymentHandler(paymentServ, validator)
 	rentalLogsHand := handler.NewRentalLogsHandler(rentalLogsServ)
+	carAvailLogsHand := handler.NewCarAvailLogsHandler(rentalLogsServ, validator)
 
 	//echo
 	e := echo.New()
@@ -62,6 +63,7 @@ func main() {
 	jwt.POST("/users/payments", paymentHand.CreatePayment)
 	jwt.GET("/users/payments", paymentHand.GetByUserIdPayment)
 	jwt.GET("/users/rental/logs", rentalLogsHand.GetByUserIdLogs)
+	jwt.GET("/users/cars/availability", carAvailLogsHand.CheckAvailabilityByCarId)
 
 
 	port := os.Getenv("PORT")

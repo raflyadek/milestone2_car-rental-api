@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"milestone2/internal/entity"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -10,6 +12,7 @@ type RentalLogsRepository interface {
 	GetAll() (logs []entity.RentalLogs, err error)
 	GetById(id int) (logs entity.RentalLogs, err error)
 	GetByUserId(userId int) (logs []entity.RentalLogs, err error)
+	GetByCarId(carId int) (logs []entity.RentalLogs, err error)
 }
 
 type RentalServ struct {
@@ -76,6 +79,53 @@ func (rs *RentalServ) GetByUserIdLogs(userId int) (resp []entity.RentalLogsRespo
 	for _, log := range logs {
 		resp = append(resp, entity.RentalLogsResponseUser(log))
 	}
+
+	return resp, nil
+}
+
+
+func (rs *RentalServ) CheckAvailabilityByCarId(req entity.CheckCarAvailabilityRequest) (resp entity.RentalAvailabilityResponse, err error) {
+	logs, err := rs.logsRepo.GetByCarId(req.CarId)
+	if err != nil {
+		logrus.Print("error get log by")
+	}
+	layout := "2006-01-02"
+	startDate := req.StartDate
+	endDate := req.EndDate
+
+	startDateParse, errr := time.Parse(layout, startDate)
+	if errr != nil {
+		logrus.Printf("failed parse start")
+		return entity.RentalAvailabilityResponse{}, err
+	}
+
+	endDateParse, errrr := time.Parse(layout, endDate)
+	if errrr != nil {
+		logrus.Printf("failed parse end")
+		return entity.RentalAvailabilityResponse{}, errr
+	}
+
+	
+
+	for _, log := range logs {
+		endDateLogParse, err := time.Parse(time.RFC3339, log.EndDate)
+		startDateLogParse, errr := time.Parse(time.RFC3339, log.StartDate)
+		fmt.Print(endDateLogParse, startDateLogParse, startDateParse, endDateParse)
+		if err != nil {
+			logrus.Printf("failed parse end log")
+			return entity.RentalAvailabilityResponse{}, err
+		}
+
+		if errr != nil {
+			logrus.Printf("failed parse start log")
+			return entity.RentalAvailabilityResponse{}, errr
+		}
+        // check overlap
+        if !startDateParse.Before(endDateLogParse) && endDateParse.After(startDateLogParse) {
+            resp.Availability = true
+            return resp, nil
+        }	
+    }
 
 	return resp, nil
 }
