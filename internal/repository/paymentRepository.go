@@ -58,6 +58,7 @@ func (pr *PaymentRepo) GetById(id int) (payment entity.Payments, err error) {
 	return payment, nil
 }
 
+//rollback everything if one return 
 func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUntil string) (err error) {
 	errr := pr.db.WithContext(context.Background()).
 	Transaction(func(tx *gorm.DB) error {
@@ -87,11 +88,11 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 			return err
 		}
 
-		//update the car avail as false
+		//update the car availability until 
 		var car entity.Cars
 		if err := tx.Model(&car).Where("id = ?", payment.CarId).
 		Updates(map[string]interface{}{
-			"Availability": false,
+			// "Availability": false,
 			"AvailabilityUntil": availabilityUntil,
 		}).Error; err != nil {
 			return err
@@ -102,5 +103,5 @@ func (pr *PaymentRepo) TransactionUpdate(paymentId, totalDay int, availabilityUn
 		return err
 	}
 
-	return err
+	return nil
 }

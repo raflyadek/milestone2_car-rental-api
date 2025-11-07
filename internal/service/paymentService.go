@@ -29,15 +29,49 @@ func NewPaymentService(paymentRepo PaymentRepository, carRepo CarRepository) *Pa
 }
 
 func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest) (resp entity.PaymentInfoResponse, err error) {
-	//check if the car is avail
+	// check if the car is avail
 	getCarInfo, err := ps.carRepo.GetById(req.CarId)
 	if err != nil {
 		log.Print(err.Error())
-		return 
+		return entity.PaymentInfoResponse{}, err
+	}
+	
+	//check date
+	availUntil := getCarInfo.AvailabilityUntil
+	startDate := req.StartDate
+
+	startDateParsed, err := time.Parse("2006-01-02", startDate)
+	if err != nil {
+		log.Print("parse failed")
+		return entity.PaymentInfoResponse{}, err
 	}
 
-	if !getCarInfo.Availability {
-		return entity.PaymentInfoResponse{}, fmt.Errorf("error %s", err)
+	availUntilParsed, err := time.Parse(time.RFC3339, availUntil)
+	if err != nil {
+		log.Print("parse failed")
+		return entity.PaymentInfoResponse{}, err
+	}
+	
+	availUntilBool := availUntilParsed.After(startDateParsed)
+		
+	if startDateParsed.Before(time.Now()) {
+		return entity.PaymentInfoResponse{}, fmt.Errorf("start date cannot beforec current time")
+	}
+
+	//check if availability is null or not 
+	if availUntil != "" {
+		//check if the start date is valid or not 
+		if startDateParsed.Before(time.Now()) {
+			log.Printf("date cannot before today")
+			return entity.PaymentInfoResponse{}, fmt.Errorf("date cannot before today")
+		}
+		//if availuntilparsed after the startDate so if availuntilparse is 20 and now is 21 
+		//the value then false and continue and if true then it stops right here.
+		//check the car availability until
+	if availUntilBool {
+		log.Print("check avail until")
+		return entity.PaymentInfoResponse{}, fmt.Errorf("car is not available")
+		}
 	}
 
 	// price is flexible according to day
@@ -46,7 +80,7 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	totalDay, err := ps.totalDay(req.EndDate, req.StartDate)
 	if err != nil {
 		log.Print("here")
-		return 
+		return entity.PaymentInfoResponse{}, err
 	}
 
 	//valid until
@@ -64,11 +98,13 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 		ValidUntil: validUntil,
 	}
 	if err := ps.paymentRepo.Create(&payment); err != nil {
+		log.Print("create payment")
 		return entity.PaymentInfoResponse{}, err
 	}
 
 	paymentInfo, err := ps.GetByIdPayment(payment.Id)
 	if err != nil {
+		log.Print("get by id payment")
 		return entity.PaymentInfoResponse{}, err
 	}
 
@@ -156,13 +192,11 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	//we can check with if car.availability.until.day < now then continue
 	//yeah using availability.until.day so if someone booked it for next week even 
 	//even tho the availability is false anyone can still rented it if < availability.until.day
-	// fmt.Printf("data %+v", paymentInfo)
 	if !paymentInfo.Car.Availability {
 		return entity.PaidPaymentResponse{}, fmt.Errorf("already booked")
 	}
 
 	//parsing date
-	//formatTime := "2006-01-02 15:04:05"
 	formatDate := "2006-01-02"
 	endDate := paymentInfo.EndDate
 	startDate := paymentInfo.StartDate
@@ -180,21 +214,18 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	}
 	//total day 	
 	totalDay := parseEndDate.Day() - parseStartDate.Day()
-	//avail until cars
+	//avail until cars + 1 day for the buffer time
 	carsAvailUntil := parseEndDate.Add(time.Hour * 24).Format(formatDate)
 
 	//valid until check 
-	// formatTime := "15:04:05"
 	validUntil := paymentInfo.ValidUntil
 
 	parseValidUntil, err := time.Parse(time.RFC3339, validUntil)
 	if err != nil {
 		return
 	}
-
-	now := time.Now()
 	
-	if parseValidUntil.After(now) {
+	if parseValidUntil.After(time.Now()) {
 		return entity.PaidPaymentResponse{}, fmt.Errorf("expired payment")
 	}
 
@@ -207,9 +238,7 @@ func (ps *PaymentServ) TransactionUpdatePayment(paymentId int) (resp entity.Paid
 	TransactionUpdatePaymentResp := entity.PaidPaymentResponse{
 		Id: paymentInfo.Id,
 		UserId: paymentInfo.UserId,
-		// User: paymentInfo.User,
 		CarId: paymentInfo.CarId,
-		// Car: paymentInfo.Car,
 		TotalDay: totalDay,
 		TotalSpent: paymentInfo.Price,
 		CreatedAt: paymentInfo.CreatedAt,

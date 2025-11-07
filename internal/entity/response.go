@@ -15,7 +15,6 @@ type UserResponse struct {
 	Id       int    `json:"id"`
 	Email    string `json:"email"`
 	FullName string `json:"full_name"`
-	// Deposit          float64 `json:"deposit"`
 	ValidationStatus bool `json:"validation_status"`
 }
 

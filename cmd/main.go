@@ -41,9 +41,9 @@ func main() {
 	e.Use(middleware.LoggingMiddleware)
 	e.HTTPErrorHandler = middleware.ErrorHandler
 	//auth
-	e.POST("/users/register", userHand.UserRegister)
-	e.POST("/users/login", userHand.UserLogin)
-	e.PUT("/users/validation", userHand.UserValidation)
+	e.POST("/auth/register", userHand.UserRegister)
+	e.POST("/auth/login", userHand.UserLogin)
+	e.PUT("/auth/validation", userHand.UserValidation)
 	
 	//restricted endpoint 
 	jwt := e.Group("")

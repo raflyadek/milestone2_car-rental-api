@@ -152,7 +152,6 @@ func (us *UserServ) GetUserValidation(code, email string) (entity.UserResponse, 
 		Id:               user.Id,
 		Email:            user.Email,
 		FullName:         user.FullName,
-		// Deposit:          user.Deposit,
 		ValidationStatus: user.ValidationStatus,
 	}
 
