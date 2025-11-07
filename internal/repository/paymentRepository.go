@@ -31,7 +31,6 @@ func (pr *PaymentRepo) GetAll() (payments []entity.Payments, err error) {
 	Find(&payments).Error; err != nil {
 		return []entity.Payments{}, err
 	}
-
 	return payments, nil
 }
 

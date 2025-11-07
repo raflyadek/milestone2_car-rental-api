@@ -22,16 +22,19 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	carsRepo := repository.NewCarsRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db)
+	rentalLogsRepo := repository.NewRentalLogsRepository(db)
 
 	//service
 	userServ := service.NewUserService(userRepo)
 	carsServ := service.NewCarsService(carsRepo)
 	paymentServ := service.NewPaymentService(paymentRepo, carsRepo)
+	rentalLogsServ := service.NewRentalLogsService(rentalLogsRepo)
 
 	//handler
 	userHand := handler.NewUserHandler(userServ)
 	carsHand := handler.NewCarsHandler(carsServ)
 	paymentHand := handler.NewPaymentHandler(paymentServ, validator)
+	rentalLogsHand := handler.NewRentalLogsHandler(rentalLogsServ)
 
 	//echo
 	e := echo.New()
@@ -49,13 +52,16 @@ func main() {
 	//admin
 	jwt.POST("/admin/cars", carsHand.CreateRentalCars)
 	jwt.PATCH("/admin/payments/:id", paymentHand.TransactionUpdatePayment)
-	jwt.GET("admin/payments", paymentHand.GetAllPayment)
-	jwt.GET("admin/payments/:id", paymentHand.GetByIdPayment)
+	jwt.GET("/admin/payments", paymentHand.GetAllPayment)
+	jwt.GET("/admin/payments/:id", paymentHand.GetByIdPayment)
+	jwt.GET("/admin/rental/logs", rentalLogsHand.GetAllLogs)
+	jwt.GET("/admin/rental/logs/:id", rentalLogsHand.GetByIdLogs)
 	//all
 	jwt.GET("/users/cars/:id", carsHand.GetRentalCarsById)
 	jwt.GET("/users/cars", carsHand.GetAllCars)
 	jwt.POST("/users/payments", paymentHand.CreatePayment)
 	jwt.GET("/users/payments", paymentHand.GetByUserIdPayment)
+	jwt.GET("/users/rental/logs", rentalLogsHand.GetByUserIdLogs)
 
 
 	port := os.Getenv("PORT")
