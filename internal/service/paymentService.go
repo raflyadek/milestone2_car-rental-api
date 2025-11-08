@@ -66,7 +66,7 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 
 	//check if availability is null or not 
 	if availUntil != "" {
-		//check if the start date is valid or not 
+		//check if the start date is valid or nit
 		if startDateParsed.Before(time.Now()) {
 			log.Printf("date cannot before today")
 			return entity.PaymentInfoResponse{}, fmt.Errorf("date cannot before today")

@@ -1,19 +1,19 @@
 package entity
 
 type RegisterRequest struct {
-	Email string `json:"email" validate:"required"`
-	FullName string `json:"full_name" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	FullName string `json:"full_name" validate:"required,gte=4"`
+	Password string `json:"password" validate:"required,gte=8"`
 }
 
 type LoginRequest struct {
-	Email string `json:"email" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,gte=8"`
 }
 
 type EmailValidationRequest struct {
 	Code string `json:"validation_code" validate:"required"`
-	Email string `json:"email" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type CreateRentalCarsRequest struct {
