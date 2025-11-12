@@ -13,6 +13,11 @@ type RentalLogsService struct {
 	mock.Mock
 }
 
+// GetByCarId
+func (_m *RentalLogsService) GetByCarId(carId int) (logs []entity.RentalLogs, err error) {
+	return nil, nil
+}
+
 // GetAllLogs provides a mock function with no fields
 func (_m *RentalLogsService) GetAllLogs() ([]entity.RentalLogsResponseAdmin, error) {
 	ret := _m.Called()

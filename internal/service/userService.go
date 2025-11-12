@@ -58,7 +58,7 @@ func (us *UserServ) CreateUser(user entity.User) (userInfo entity.UserResponse, 
 	infoUser, err := us.GetUserById(user.Id)
 	if err != nil {
 		log.Printf("error get user info by id %s", err)
-		return
+		return entity.UserResponse{}, err
 	}
 
 	textPart := fmt.Sprintf("Dear %s welcome to carz rentalz! here is your validation code: ", userInfo.FullName)

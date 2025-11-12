@@ -61,16 +61,12 @@ func (ps *PaymentServ) CreatePayment(userId int, req entity.CreatePaymentRequest
 	availUntilBool := availUntilParsed.After(startDateParsed)
 		
 	if startDateParsed.Before(time.Now()) {
+		log.Printf("check start date")
 		return entity.PaymentInfoResponse{}, fmt.Errorf("start date cannot beforec current time")
 	}
 
 	//check if availability is null or not 
 	if availUntil != "" {
-		//check if the start date is valid or not 
-		if startDateParsed.Before(time.Now()) {
-			log.Printf("date cannot before today")
-			return entity.PaymentInfoResponse{}, fmt.Errorf("date cannot before today")
-		}
 		//if availuntilparsed after the startDate so if availuntilparse is 20 and now is 21 
 		//the value then false and continue and if true then it stops right here.
 		//check the car availability until
