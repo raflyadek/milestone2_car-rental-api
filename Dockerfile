@@ -3,7 +3,7 @@ FROM golang:1.24.0 AS builder
 WORKDIR /cmd
 COPY . .
 WORKDIR /app/cmd
-RUN go build -o car-rental-api main.go
+RUN go build -o car-rental-api cmd/main.go
 
 # Stage 2: Create a minimal runtime image and running the application
 FROM debian:bookworm-slim
