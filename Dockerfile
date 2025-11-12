@@ -1,9 +1,9 @@
 # Stage 1: Build the Go application binary
-FROM golang:1.24.0 AS builder
-WORKDIR /cmd
+FROM golang:1.25.1 AS builder
+WORKDIR /app
 COPY . .
 WORKDIR /app/cmd
-RUN go build -o car-rental-api cmd/main.go
+RUN go build -o car-rental-api main.go
 
 # Stage 2: Create a minimal runtime image and running the application
 FROM debian:bookworm-slim
